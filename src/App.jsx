@@ -87,11 +87,12 @@ const App = () => {
                     'User-Agent': 'AI-Product-Generator-Frontend/1.0', // Consistent User-Agent
                 },
                 body: JSON.stringify({
-                    productName: productName,
-                    keyFeatures: keyFeatures,
-                    targetAudience: targetAudience,
-                    descriptionLength: descriptionLength,
-                    generatedText: text,
+                    "Record ID": `${productName} - ${new Date().toLocaleString()}`, // <--- NEW/FIXED LINE
+                    "Linked Product": [{ name: productName }], // This remains for the actual product link
+                    "Key Features": keyFeatures,
+                    "Target Audience": targetAudience,
+                    "Description Length": descriptionLength,
+                    "Generated Text": text,
                 }),
             });
 

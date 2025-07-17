@@ -34,12 +34,44 @@ export default async function handler(req, res) {
   const incomingUserAgent = req.headers['user-agent'] || 'Unknown-Client-Airtable-Proxy';
 
   try {
-    // Parse the request body from your React app
-    const { productName, keyFeatures, targetAudience, descriptionLength, generatedText } = req.body;
+    // --- DEBUGGING LOGS START ---
+    console.log('--- Incoming Request Body (req.body) ---');
+    console.log(req.body); // Log the raw incoming request body
+    console.log('-----------------------------------------');
+    // --- DEBUGGING LOGS END ---
 
-    // Basic validation for required fields
-    if (!productName || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
-      res.status(400).json({ error: 'Missing required fields for Airtable record.' });
+    // Destructure all fields being sent from the frontend
+    const {
+      "Record ID": recordId,
+      "Linked Product": linkedProduct,
+      "Key Features": keyFeatures,
+      "Target Audience": targetAudience,
+      "Description Length": descriptionLength,
+      "Generated Text": generatedText
+    } = req.body;
+
+    // --- DEBUGGING LOGS START ---
+    console.log('--- Destructured Fields ---');
+    console.log('recordId:', recordId, ' (exists:', !!recordId, ')');
+    console.log('linkedProduct:', linkedProduct, ' (exists:', !!linkedProduct, ')');
+    console.log('keyFeatures:', keyFeatures, ' (exists:', !!keyFeatures, ')');
+    console.log('targetAudience:', targetAudience, ' (exists:', !!targetAudience, ')');
+    console.log('descriptionLength:', descriptionLength, ' (exists:', !!descriptionLength, ')');
+    console.log('generatedText:', generatedText, ' (exists:', !!generatedText, ')');
+    console.log('---------------------------');
+    // --- DEBUGGING LOGS END ---
+
+    // Adjust validation to check for the actual required fields
+    if (!recordId || !linkedProduct || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
+      console.error('Proxy validation failed. Missing fields:', {
+        recordId: !!recordId,
+        linkedProduct: !!linkedProduct,
+        keyFeatures: !!keyFeatures,
+        targetAudience: !!targetAudience,
+        descriptionLength: !!descriptionLength,
+        generatedText: !!generatedText
+      });
+      res.status(400).json({ error: 'Missing required fields for Airtable record. Please check all fields are being sent and are not empty.' });
       return;
     }
 
@@ -49,14 +81,20 @@ export default async function handler(req, res) {
     // Prepare the data payload for Airtable
     const airtablePayload = {
       fields: {
-        "Product Name": productName,
+        "Record ID": recordId,
+        "Linked Product": linkedProduct,
         "Key Features": keyFeatures,
         "Target Audience": targetAudience,
         "Description Length": descriptionLength,
         "Generated Text": generatedText,
-        // "Generated At" field is set automatically by Airtable's 'Created time' type
       }
     };
+
+    // --- DEBUGGING LOGS START ---
+    console.log('--- Airtable Payload Being Sent ---');
+    console.log(JSON.stringify(airtablePayload, null, 2)); // Pretty print the payload
+    console.log('-----------------------------------');
+    // --- DEBUGGING LOGS END ---
 
     // Make the request to Airtable
     const airtableResponse = await fetch(airtableApiUrl, {
@@ -75,8 +113,7 @@ export default async function handler(req, res) {
     if (!airtableResponse.ok) {
       console.error(`Error from Airtable API: Status ${airtableResponse.status}, Body: ${airtableResponseText}`);
       res.status(airtableResponse.status).json({
-        error: `Failed to create record in Airtable. Status: ${airtableResponse.status}. Details: ${airtableResponseText.substring(0, 200)}...`,
-        airtableStatus: airtableResponse.status
+        error: `Failed to create record in Airtable. Status: ${airtableResponse.status}. Details: ${airtableResponseText.substring(0, 200)}...`
       });
       return;
     }
@@ -91,4 +128,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 }
- 
