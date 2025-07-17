@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // Allow POST for creating records, OPTIONS for preflight
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, User-Agent'); // Allow necessary headers
 
-  // Handle preflight OPTIONS request for CORS
+  // Handle preflight OPTIONS request for CORS.
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
