@@ -50,10 +50,9 @@ To run this project on your local machine:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/YOUR_GITHUB_USERNAME/ai-product-generator-vite-airtable.git](https://github.com/YOUR_GITHUB_USERNAME/ai-product-generator-vite-airtable.git)
+    git clone https://github.com/damunoz32/ai-product-generator-vite-airtable.git
     cd ai-product-generator-vite-airtable
     ```
-    *(Replace `YOUR_GITHUB_USERNAME` with your actual GitHub username)*
 
 2.  **Install dependencies:**
     ```bash
@@ -117,9 +116,9 @@ This application is designed for seamless deployment on Vercel.
 
     * `AIRTABLE_BASE_ID`: Your Airtable Base ID (starts with `app...`).
 
-3.  **Update Frontend URLs:** After deployment, copy your Vercel project's main domain (e.g., `https://ai-product-generator-sigma.vercel.app/`) and update `src/App.jsx` to use these live URLs for the API proxies:
+3.  **Update Frontend URLs:** After deployment, copy your Vercel project's main domain (e.g., `https://{{example}}.vercel.app/`) and update `src/App.jsx` to use these live URLs for the API proxies:
     ```javascript
-    const VERCEL_PRODUCTION_DOMAIN = '[https://ai-product-generator-sigma.vercel.app](https://ai-product-generator-sigma.vercel.app)'; // Your main Vercel domain
+    const VERCEL_PRODUCTION_DOMAIN = '[https://{{example}}.vercel.app]';
     const GEMINI_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/gemini-generate-description`;
     const AIRTABLE_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/airtable-descriptions`;
     ```
