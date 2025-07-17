@@ -15,8 +15,8 @@ const App = () => {
     // --- IMPORTANT: REPLACE WITH YOUR ACTUAL VERCEL SERVERLESS FUNCTION URLS AFTER DEPLOYMENT ---
     // For local testing, if you run Vercel dev server (vercel dev), these might be http://localhost:3000/api/...
     // For deployed app, use your Vercel project's domain.
-    const GEMINI_PROXY_API_URL = 'https://YOUR-VERCEL-PROJECT-NAME.vercel.app/api/gemini-generate-description'; // Placeholder
-    const AIRTABLE_PROXY_API_URL = 'https://YOUR-VERCEL-PROJECT-NAME.vercel.app/api/airtable-descriptions'; // Placeholder
+    const GEMINI_PROXY_API_URL = 'https://ai-product-generator-sigma.vercel.app/api/gemini-generate-description';
+    const AIRTABLE_PROXY_API_URL = 'https://ai-product-generator-sigma.vercel.app/api/airtable-descriptions';
 
     // Effect to clear error messages after a delay
     useEffect(() => {
