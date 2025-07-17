@@ -184,7 +184,7 @@ This highlights the importance of systematic debugging, understanding build tool
 ## 🚀 Live Application
 
 You can view and interact with the live application here:
-[https://ai-product-generator-sigma.vercel.app/](https://ai-product-generator-sigma.vercel.app/) *(Replace `sigma` with your actual Vercel subdomain if different)*
+[https://ai-product-generator-sigma.vercel.app/](https://ai-product-generator-sigma.vercel.app/)
 
 ## 📧 Contact
 
