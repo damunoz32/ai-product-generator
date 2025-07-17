@@ -179,7 +179,7 @@ This project's development involved navigating several persistent and insightful
     * **Debugging:** The error message clearly pointed to a validation issue with a "Single select" field in Airtable.
     * **Resolution:** Manually added the expected options (`short`, `medium`, `long`) to the "Description Length" field in the Airtable table.
 
-This journey highlights the importance of systematic debugging, understanding build tool intricacies, and the value of choosing the right tools for the job when faced with persistent environmental challenges.
+This highlights the importance of systematic debugging, understanding build tool intricacies, and the value of choosing the right tools for the job when faced with persistent environmental challenges.
 
 ## 🚀 Live Application
 
@@ -188,8 +188,8 @@ You can view and interact with the live application here:
 
 ## 📧 Contact
 
-Dante Muñoz
-damunoz32@gmail.com
-https://dantemunoz.webflow.io
-https://github.com/damunoz32
-https://www.linkedin.com/in/dante-munoz-86433190/
+Dante Muñoz  
+damunoz32@gmail.com  
+https://dantemunoz.webflow.io  
+https://github.com/damunoz32  
+https://www.linkedin.com/in/dante-munoz-86433190/  
