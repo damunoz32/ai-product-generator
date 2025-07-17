@@ -15,6 +15,7 @@ const App = () => {
     // --- IMPORTANT: REPLACE WITH YOUR ACTUAL VERCEL SERVERLESS FUNCTION URLS AFTER DEPLOYMENT ---
     // For local testing, if you run Vercel dev server (vercel dev), these might be http://localhost:3000/api/...
     // For deployed app, use your Vercel project's domain.
+    const VERCEL_PRODUCTION_DOMAIN = 'https://ai-product-generator-sigma.vercel.app';
     const GEMINI_PROXY_API_URL = 'https://ai-product-generator-sigma.vercel.app/api/gemini-generate-description';
     const AIRTABLE_PROXY_API_URL = 'https://ai-product-generator-sigma.vercel.app/api/airtable-descriptions';
 
