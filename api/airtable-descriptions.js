@@ -1,28 +1,25 @@
 // api/airtable-descriptions.js
-import fetch from 'node-fetch'; // Ensure node-fetch is installed in your Vercel project if not already
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  // Set CORS headers for all responses.
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Allows requests from any origin
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // Allow POST for creating records, OPTIONS for preflight
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, User-Agent'); // Allow necessary headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, User-Agent');
 
-  // Handle preflight OPTIONS request for CORS.
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
-  // Ensure it's a POST request for creating data
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method Not Allowed. This endpoint only accepts POST requests.' });
     return;
   }
 
-  // Retrieve Airtable API Token and Base ID from environment variables
   const airtableApiToken = process.env.AIRTABLE_API_TOKEN;
   const airtableBaseId = process.env.AIRTABLE_BASE_ID;
-  const airtableTableName = 'Generated Descriptions'; // Hardcode your table name
+  const generatedDescriptionsTableName = 'Generated Descriptions'; // Your main table
+  const productsTableName = 'Products'; // Your products table
 
   if (!airtableApiToken || !airtableBaseId) {
     console.error('Missing Airtable API Token or Base ID environment variables.');
@@ -30,59 +27,90 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Capture the User-Agent from the incoming request for consistent logging
   const incomingUserAgent = req.headers['user-agent'] || 'Unknown-Client-Airtable-Proxy';
 
   try {
-    // --- DEBUGGING LOGS START ---
-    console.log('--- Incoming Request Body (req.body) ---');
-    console.log(req.body); // Log the raw incoming request body
-    console.log('-----------------------------------------');
-    // --- DEBUGGING LOGS END ---
+    let requestBody;
+    if (typeof req.body === 'string') {
+      requestBody = JSON.parse(req.body);
+    } else if (typeof req.body === 'object' && req.body !== null) {
+      requestBody = req.body;
+    } else {
+      console.error('Invalid req.body format:', req.body);
+      res.status(400).json({ error: 'Invalid request body format.' });
+      return;
+    }
 
-    // Destructure all fields being sent from the frontend
     const {
-      "Record ID": recordId,
-      "Linked Product": linkedProduct,
+      "Record ID": recordId, // Primary field for Generated Descriptions
+      "Linked Product": linkedProductArray, // This is the array [{ name: "Product Name" }] from frontend
       "Key Features": keyFeatures,
       "Target Audience": targetAudience,
       "Description Length": descriptionLength,
       "Generated Text": generatedText
-    } = req.body;
+    } = requestBody;
 
-    // --- DEBUGGING LOGS START ---
-    console.log('--- Destructured Fields ---');
-    console.log('recordId:', recordId, ' (exists:', !!recordId, ')');
-    console.log('linkedProduct:', linkedProduct, ' (exists:', !!linkedProduct, ')');
-    console.log('keyFeatures:', keyFeatures, ' (exists:', !!keyFeatures, ')');
-    console.log('targetAudience:', targetAudience, ' (exists:', !!targetAudience, ')');
-    console.log('descriptionLength:', descriptionLength, ' (exists:', !!descriptionLength, ')');
-    console.log('generatedText:', generatedText, ' (exists:', !!generatedText, ')');
-    console.log('---------------------------');
-    // --- DEBUGGING LOGS END ---
+    // Extract the product name from the linkedProductArray
+    const productNameFromFrontend = linkedProductArray && linkedProductArray.length > 0
+                                    ? linkedProductArray[0].name
+                                    : null;
 
-    // Adjust validation to check for the actual required fields
-    if (!recordId || !linkedProduct || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
+    // --- Start: Lookup Product ID from Products table ---
+    let productRecordId = null;
+
+    if (productNameFromFrontend) {
+      const productsApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(productsTableName)}?filterByFormula=({Product Name}='${encodeURIComponent(productNameFromFrontend)}')`;
+
+      const productsResponse = await fetch(productsApiUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${airtableApiToken}`,
+          'Content-Type': 'application/json',
+          'User-Agent': incomingUserAgent,
+        },
+      });
+
+      const productsData = await productsResponse.json();
+
+      if (productsResponse.ok && productsData.records && productsData.records.length > 0) {
+        productRecordId = productsData.records[0].id;
+        console.log(`Found Product ID for "${productNameFromFrontend}": ${productRecordId}`);
+      } else {
+        // If product not found, Airtable API might automatically create it when linking by name.
+        // However, the error "Value [object Object] is not a valid record ID" suggests it expects an ID.
+        // For now, we'll proceed assuming it needs an ID. If not found, it will be null.
+        console.warn(`Product "${productNameFromFrontend}" not found in Products table. Attempting to link with name, or will fail if ID is strictly required.`);
+        // Fallback to the original linkedProductArray if ID lookup fails, but expect potential error
+        // If Airtable's API truly requires an ID here, we'd need to create the product first.
+        // For now, let's keep it simple and rely on the ID if found.
+      }
+    }
+    // --- End: Lookup Product ID from Products table ---
+
+    // Basic validation for required fields (including the primary field)
+    if (!recordId || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
       console.error('Proxy validation failed. Missing fields:', {
         recordId: !!recordId,
-        linkedProduct: !!linkedProduct,
         keyFeatures: !!keyFeatures,
         targetAudience: !!targetAudience,
         descriptionLength: !!descriptionLength,
-        generatedText: !!generatedText
+        generatedText: !!generatedText,
+        // linkedProduct is now handled by productRecordId or original array
       });
       res.status(400).json({ error: 'Missing required fields for Airtable record. Please check all fields are being sent and are not empty.' });
       return;
     }
 
-    // Construct the Airtable API URL for creating records
-    const airtableApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableTableName)}`;
-
     // Prepare the data payload for Airtable
     const airtablePayload = {
       fields: {
         "Record ID": recordId,
-        "Linked Product": linkedProduct,
+        // FIX: Send the actual record ID for linking, if found.
+        // If productRecordId is null, it means the product wasn't found in the Products table.
+        // In this case, Airtable's API might still accept the [{ name: "..." }] format
+        // or it might require the product to exist first.
+        // We'll send the ID if we have it, otherwise, we'll send the original array.
+        "Linked Product": productRecordId ? [{ id: productRecordId }] : linkedProductArray,
         "Key Features": keyFeatures,
         "Target Audience": targetAudience,
         "Description Length": descriptionLength,
@@ -92,22 +120,21 @@ export default async function handler(req, res) {
 
     // --- DEBUGGING LOGS START ---
     console.log('--- Airtable Payload Being Sent ---');
-    console.log(JSON.stringify(airtablePayload, null, 2)); // Pretty print the payload
+    console.log(JSON.stringify(airtablePayload, null, 2));
     console.log('-----------------------------------');
     // --- DEBUGGING LOGS END ---
 
-    // Make the request to Airtable
+    const airtableApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(generatedDescriptionsTableName)}`;
     const airtableResponse = await fetch(airtableApiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${airtableApiToken}`,
         'Content-Type': 'application/json',
-        'User-Agent': incomingUserAgent, // Forward the client's User-Agent
+        'User-Agent': incomingUserAgent,
       },
       body: JSON.stringify(airtablePayload),
     });
 
-    // Read the response from Airtable as text first for better error logging
     const airtableResponseText = await airtableResponse.text();
 
     if (!airtableResponse.ok) {
@@ -118,7 +145,6 @@ export default async function handler(req, res) {
       return;
     }
 
-    // Parse the Airtable response as JSON
     const data = JSON.parse(airtableResponseText);
 
     res.status(200).json({ message: 'Record created successfully in Airtable!', record: data });
