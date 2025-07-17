@@ -118,7 +118,7 @@ This application is designed for seamless deployment on Vercel.
 
 3.  **Update Frontend URLs:** After deployment, copy your Vercel project's main domain (e.g., `https://{{example}}.vercel.app/`) and update `src/App.jsx` to use these live URLs for the API proxies:
     ```javascript
-    const VERCEL_PRODUCTION_DOMAIN = '[https://{{example}}.vercel.app]';
+    const VERCEL_PRODUCTION_DOMAIN = 'https://{{example}}.vercel.app';
     const GEMINI_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/gemini-generate-description`;
     const AIRTABLE_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/airtable-descriptions`;
     ```
