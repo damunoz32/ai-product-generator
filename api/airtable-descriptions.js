@@ -43,25 +43,32 @@ export default async function handler(req, res) {
 
     // Destructure all fields from the parsed requestBody
     const {
-      "Record ID": recordId, // Primary field for Generated Descriptions
-      "Linked Product": linkedProductArray, // This is the array [{ name: "Product Name" }] from frontend
+      "Record ID": recordId,
+      "Linked Product": linkedProductArray,
       "Key Features": keyFeatures,
       "Target Audience": targetAudience,
       "Description Length": descriptionLength,
       "Generated Text": generatedText
     } = requestBody;
 
-    // Extract the product name from the linkedProductArray
     const productNameFromFrontend = linkedProductArray && linkedProductArray.length > 0
                                     ? linkedProductArray[0].name
                                     : null;
 
-    let productRecordId = null;
+    let productRecordId = null; // This will hold the ID of the product from the Products table
+
+    // --- DEBUGGING LOGS START ---
+    console.log('--- Incoming Request Body (Proxy) ---');
+    console.log(JSON.stringify(requestBody, null, 2));
+    console.log(`Product Name from Frontend for Linking: "${productNameFromFrontend}"`);
+    console.log('-------------------------------------');
+    // --- DEBUGGING LOGS END ---
 
     if (productNameFromFrontend) {
       // 1. Attempt to find the product by name in the Products table
       const productsLookupApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(productsTableName)}?filterByFormula=({Product Name}='${encodeURIComponent(productNameFromFrontend)}')`;
 
+      console.log(`Attempting to lookup product: ${productNameFromFrontend} at URL: ${productsLookupApiUrl}`);
       const productsLookupResponse = await fetch(productsLookupApiUrl, {
         method: 'GET',
         headers: {
@@ -72,6 +79,10 @@ export default async function handler(req, res) {
       });
 
       const productsLookupData = await productsLookupResponse.json();
+      console.log('--- Products Lookup Response ---');
+      console.log(`Status: ${productsLookupResponse.status}`);
+      console.log('Body:', JSON.stringify(productsLookupData, null, 2));
+      console.log('--------------------------------');
 
       if (productsLookupResponse.ok && productsLookupData.records && productsLookupData.records.length > 0) {
         // Product found, get its ID
@@ -79,13 +90,17 @@ export default async function handler(req, res) {
         console.log(`Found existing Product ID for "${productNameFromFrontend}": ${productRecordId}`);
       } else {
         // Product not found, create a new one in the Products table
-        console.log(`Product "${productNameFromFrontend}" not found in Products table. Creating new product...`);
+        console.log(`Product "${productNameFromFrontend}" not found in Products table. Attempting to create new product...`);
         const createProductApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(productsTableName)}`;
         const createProductPayload = {
           fields: {
             "Product Name": productNameFromFrontend // Use the product name as the primary field for the Products table
           }
         };
+
+        console.log('--- Creating New Product Payload ---');
+        console.log(JSON.stringify(createProductPayload, null, 2));
+        console.log('------------------------------------');
 
         const createProductResponse = await fetch(createProductApiUrl, {
           method: 'POST',
@@ -98,18 +113,28 @@ export default async function handler(req, res) {
         });
 
         const createProductData = await createProductResponse.json();
+        console.log('--- Create Product Response ---');
+        console.log(`Status: ${createProductResponse.status}`);
+        console.log('Body:', JSON.stringify(createProductData, null, 2));
+        console.log('-------------------------------');
+
 
         if (createProductResponse.ok && createProductData.id) {
           productRecordId = createProductData.id;
           console.log(`Successfully created new Product "${productNameFromFrontend}" with ID: ${productRecordId}`);
         } else {
           console.error(`Failed to create new product "${productNameFromFrontend}" in Products table. Status: ${createProductResponse.status}, Body: ${JSON.stringify(createProductData)}`);
-          // If product creation fails, we cannot link, so return an error
           res.status(500).json({ error: `Failed to prepare product link: Could not find or create product "${productNameFromFrontend}".` });
           return;
         }
       }
+    } else {
+        console.warn('productNameFromFrontend was null or empty. Cannot link product.');
     }
+
+    // --- DEBUGGING LOGS START ---
+    console.log(`Final productRecordId before sending to Generated Descriptions: ${productRecordId}`);
+    // --- DEBUGGING LOGS END ---
 
     // Basic validation for required fields (including the primary field)
     if (!recordId || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
@@ -128,7 +153,6 @@ export default async function handler(req, res) {
     const airtablePayload = {
       fields: {
         "Record ID": recordId,
-        // Now, we are guaranteed to have a productRecordId (or we would have errored out)
         // Send the actual record ID for linking.
         "Linked Product": productRecordId ? [{ id: productRecordId }] : [], // Ensure it's an empty array if for some reason productRecordId is null
         "Key Features": keyFeatures,
