@@ -22,7 +22,7 @@ const App = () => {
     const GEMINI_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/gemini-generate-description`;
     const AIRTABLE_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/airtable-descriptions`;
 
-    // Base URL for the Airtable embed
+    // Base URL for the Airtable embed (without query parameters)
     const AIRTABLE_EMBED_BASE_URL = "https://airtable.com/embed/appmbVTcI3TqH3nxS/shrxArbpZEQj41Y1s?layout=card";
 
     // Effect to initialize iframeSrc with a cache-busting timestamp on initial load
@@ -89,7 +89,17 @@ const App = () => {
 
             setGeneratedDescription(text);
 
-            // 2. Save the generated description to Airtable via proxy
+            // Construct the payload for Airtable
+            const airtablePayload = {
+                "Product Name": productName, 
+                "Key Features": keyFeatures,
+                "Target Audience": targetAudience,
+                "Description Length": descriptionLength,
+                "Generated Text": text,
+            };
+
+
+            // Save the generated description to Airtable via proxy
             setSaveToAirtableStatus('Saving to Airtable...');
             const airtableSaveResponse = await fetch(AIRTABLE_PROXY_API_URL, {
                 method: 'POST',
@@ -97,13 +107,7 @@ const App = () => {
                     'Content-Type': 'application/json',
                     'User-Agent': 'AI-Product-Generator-Frontend/1.0', // Consistent User-Agent
                 },
-                body: JSON.stringify({
-                    "Product Name": productName, 
-                    "Key Features": keyFeatures,
-                    "Target Audience": targetAudience,
-                    "Description Length": descriptionLength,
-                    "Generated Text": text,
-                }),
+                body: JSON.stringify(airtablePayload),
             });
 
             if (!airtableSaveResponse.ok) {
@@ -122,7 +126,7 @@ const App = () => {
         }
     };
 
-    // Function to handle page refresh
+    // Function to handle page refresh (now updates iframe src)
     const handleRefreshAirtableView = () => {
         // Update the iframe src with a new timestamp to force a reload
         setIframeSrc(`${AIRTABLE_EMBED_BASE_URL}&_t=${new Date().getTime()}`);

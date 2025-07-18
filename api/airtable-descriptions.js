@@ -64,7 +64,7 @@ export default async function handler(req, res) {
     const airtablePayload = {
       fields: {
         // FIX: Send the unique ID to the primary "Product Name" field
-        "Product Name": productNamePrimary,
+        "Product Name": productName,
         "Key Features": keyFeatures,
         "Target Audience": targetAudience,
         "Description Length": descriptionLength,
