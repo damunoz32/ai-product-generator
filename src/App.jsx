@@ -12,12 +12,23 @@ const App = () => {
     const [generationError, setGenerationError] = React.useState(null);
     const [saveToAirtableStatus, setSaveToAirtableStatus] = React.useState(''); // New state for Airtable save status
 
+    // State for the iframe's source URL to bust cache
+    const [iframeSrc, setIframeSrc] = React.useState('');
+
     // --- IMPORTANT: REPLACE WITH YOUR ACTUAL VERCEL SERVERLESS FUNCTION URLS AFTER DEPLOYMENT ---
     // For local testing, if you run Vercel dev server (vercel dev), these might be http://localhost:3000/api/...
     // For deployed app, use your Vercel project's domain.
     const VERCEL_PRODUCTION_DOMAIN = 'https://ai-product-generator-sigma.vercel.app';
     const GEMINI_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/gemini-generate-description`;
     const AIRTABLE_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/airtable-descriptions`;
+
+    // Base URL for the Airtable embed (without query parameters)
+    const AIRTABLE_EMBED_BASE_URL = "https://airtable.com/embed/appmbVTcI3TqH3nxS/shrxArbpZEQj41Y1s?layout=card";
+
+    // Effect to initialize iframeSrc with a cache-busting timestamp on initial load
+    React.useEffect(() => {
+        setIframeSrc(`${AIRTABLE_EMBED_BASE_URL}&_t=${new Date().getTime()}`);
+    }, []); // Run only once on mount
 
     // Effect to clear error messages after a delay
     React.useEffect(() => {
@@ -87,8 +98,8 @@ const App = () => {
                     'User-Agent': 'AI-Product-Generator-Frontend/1.0', // Consistent User-Agent
                 },
                 body: JSON.stringify({
-                    // Send the unique ID to the primary field, which is "Product Name"
-                    "Product Name": `${productName} - ${new Date().toLocaleString()}`, // Unique ID for the record
+                    // FIX: Send ONLY the productName to the "Product Name" field
+                    "Product Name": productName, // <--- CRITICAL FIX for Product Name
                     "Key Features": keyFeatures,
                     "Target Audience": targetAudience,
                     "Description Length": descriptionLength,
@@ -112,9 +123,11 @@ const App = () => {
         }
     };
 
-    // Function to handle page refresh
-    const handleRefreshPage = () => {
-        window.location.reload();
+    // Function to handle page refresh (now updates iframe src)
+    const handleRefreshAirtableView = () => {
+        // Update the iframe src with a new timestamp to force a reload
+        setIframeSrc(`${AIRTABLE_EMBED_BASE_URL}&_t=${new Date().getTime()}`);
+        setSaveToAirtableStatus('Airtable view refreshed!'); // Provide feedback
     };
 
     return (
@@ -219,7 +232,7 @@ const App = () => {
                 {/* Refresh Button */}
                 <div className="flex justify-center mb-4">
                     <button
-                        onClick={handleRefreshPage}
+                        onClick={handleRefreshAirtableView}
                         className="bg-[#90A08F] hover:bg-[#D1A980] text-[#3C4B3B] font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D1A980] focus:ring-opacity-75"
                     >
                         Refresh Airtable View
@@ -228,7 +241,7 @@ const App = () => {
                 <div className="relative" style={{ paddingBottom: '56.25%', height: 0 }}> {/* 16:9 aspect ratio container */}
                     <iframe
                         className="absolute top-0 left-0 w-full h-full rounded-md" // Tailwind classes for full size and rounded corners
-                        src="https://airtable.com/embed/appmbVTcI3TqH3nxS/shrxArbpZEQj41Y1s?layout=card"
+                        src={iframeSrc} {/* Use the state variable for src */}
                         frameBorder="0"
                         onLoad={() => console.log('Airtable iframe loaded')} // Optional: for debugging
                         style={{ background: 'transparent' }} // Keep transparent background if needed
