@@ -118,7 +118,7 @@ const App = () => {
                 AI Product Description Generator
             </h1>
 
-            <div className="space-y-6 mb-8"> {/* Increased space-y and mb */}
+            <div className="space-y-6 mb-8">
                 <div>
                     <label htmlFor="productName" className="block text-[#F8F8F8] text-sm font-bold mb-2">Product Name:</label>
                     <input
@@ -167,10 +167,10 @@ const App = () => {
                 </div>
             </div>
 
-            <div className="flex justify-center mb-8"> {/* Added mb for spacing below button */}
+            <div className="flex justify-center mb-8">
                 <button
                     onClick={handleGenerateDescription}
-                    className="bg-[#D1A980] hover:bg-[#B89470] text-[#3C4B3B] font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D1A980] focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed" // Added disabled styles
+                    className="bg-[#D1A980] hover:bg-[#B89470] text-[#3C4B3B] font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D1A980] focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={loading}
                 >
                     {loading ? 'Generating...' : 'Generate Description'}
@@ -178,7 +178,7 @@ const App = () => {
             </div>
 
             {generationError && (
-                <div className="mt-6 p-4 bg-red-700 text-red-100 rounded-lg shadow-md text-center flex items-center justify-center space-x-2"> {/* Adjusted color, added flex for icon */}
+                <div className="mt-6 p-4 bg-red-700 text-red-100 rounded-lg shadow-md text-center flex items-center justify-center space-x-2">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
@@ -207,6 +207,24 @@ const App = () => {
                     )}
                 </div>
             )}
+
+            {/* Airtable Iframe Section */}
+            <div className="mt-12 p-6 bg-[#5A6B59] rounded-lg shadow-inner border border-[#748873]">
+                <h3 className="text-xl font-semibold text-[#D1A980] mb-4 text-center">View Generated Descriptions in Airtable</h3>
+                <div className="relative" style={{ paddingBottom: '56.25%', height: 0 }}> {/* 16:9 aspect ratio container */}
+                    <iframe
+                        className="absolute top-0 left-0 w-full h-full rounded-md" // Tailwind classes for full size and rounded corners
+                        src="https://airtable.com/embed/appmbVTcI3TqH3nxS/shrxArbpZEQj41Y1s?layout=card"
+                        frameBorder="0"
+                        onLoad={() => console.log('Airtable iframe loaded')} // Optional: for debugging
+                        style={{ background: 'transparent' }} // Keep transparent background if needed
+                        allowFullScreen // Allow fullscreen
+                    ></iframe>
+                </div>
+                <p className="text-[#F8F8F8] text-sm mt-4 text-center">
+                    *Note: This embedded view may not update in real-time. Refresh the page to see new entries.
+                </p>
+            </div>
         </div>
     );
 };
