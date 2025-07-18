@@ -3,14 +3,14 @@ import React, { useState, useEffect } from 'react';
 // Main App component for the AI Product Description Generator
 const App = () => {
     // State variables for inputs and output
-    const [productName, setProductName] = useState('');
-    const [keyFeatures, setKeyFeatures] = useState('');
-    const [targetAudience, setTargetAudience] = useState('');
-    const [descriptionLength, setDescriptionLength] = useState('medium'); // Default to medium
-    const [generatedDescription, setGeneratedDescription] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [generationError, setGenerationError] = useState(null);
-    const [saveToAirtableStatus, setSaveToAirtableStatus] = useState(''); // New state for Airtable save status
+    const [productName, setProductName] = React.useState('');
+    const [keyFeatures, setKeyFeatures] = React.useState('');
+    const [targetAudience, setTargetAudience] = React.useState('');
+    const [descriptionLength, setDescriptionLength] = React.useState('medium'); // Default to medium
+    const [generatedDescription, setGeneratedDescription] = React.useState('');
+    const [loading, setLoading] = React.useState(false);
+    const [generationError, setGenerationError] = React.useState(null);
+    const [saveToAirtableStatus, setSaveToAirtableStatus] = React.useState(''); // New state for Airtable save status
 
     // --- IMPORTANT: REPLACE WITH YOUR ACTUAL VERCEL SERVERLESS FUNCTION URLS AFTER DEPLOYMENT ---
     // For local testing, if you run Vercel dev server (vercel dev), these might be http://localhost:3000/api/...
@@ -20,7 +20,7 @@ const App = () => {
     const AIRTABLE_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/airtable-descriptions`;
 
     // Effect to clear error messages after a delay
-    useEffect(() => {
+    React.useEffect(() => {
         if (generationError) {
             const timer = setTimeout(() => {
                 setGenerationError(null);
@@ -30,7 +30,7 @@ const App = () => {
     }, [generationError]);
 
     // Effect to clear Airtable save status messages after a delay
-    useEffect(() => {
+    React.useEffect(() => {
         if (saveToAirtableStatus) {
             const timer = setTimeout(() => {
                 setSaveToAirtableStatus('');
@@ -110,6 +110,11 @@ const App = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Function to handle page refresh
+    const handleRefreshPage = () => {
+        window.location.reload();
     };
 
     return (
@@ -211,6 +216,15 @@ const App = () => {
             {/* Airtable Iframe Section */}
             <div className="mt-12 p-6 bg-[#5A6B59] rounded-lg shadow-inner border border-[#748873]">
                 <h3 className="text-xl font-semibold text-[#D1A980] mb-4 text-center">View Generated Descriptions in Airtable</h3>
+                {/* Refresh Button */}
+                <div className="flex justify-center mb-4">
+                    <button
+                        onClick={handleRefreshPage}
+                        className="bg-[#90A08F] hover:bg-[#D1A980] text-[#3C4B3B] font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D1A980] focus:ring-opacity-75"
+                    >
+                        Refresh Airtable View
+                    </button>
+                </div>
                 <div className="relative" style={{ paddingBottom: '56.25%', height: 0 }}> {/* 16:9 aspect ratio container */}
                     <iframe
                         className="absolute top-0 left-0 w-full h-full rounded-md" // Tailwind classes for full size and rounded corners
@@ -222,7 +236,7 @@ const App = () => {
                     ></iframe>
                 </div>
                 <p className="text-[#F8F8F8] text-sm mt-4 text-center">
-                    *Note: This embedded view may not update in real-time. Refresh the page to see new entries.
+                    *Note: This embedded view may not update in real-time. Click "Refresh Airtable View" to see new entries.
                 </p>
             </div>
         </div>
