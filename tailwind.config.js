@@ -1,11 +1,14 @@
-/** @type {import('tailwindcss').Config} */
-    export default {
-      content: [
-        "./index.html",
-        "./src/**/*.{js,ts,jsx,tsx}", // Ensure this line is exactly as shown
-      ],
-      theme: {
-        extend: {},
-      },
-      plugins: [],
-    }
+        /** @type {import('tailwindcss').Config} */
+        export default {
+          content: [
+            "./index.html",
+            "./src/**/*.{js,ts,jsx,tsx}",
+          ],
+          theme: {
+            extend: {},
+          },
+          plugins: [
+            require('@tailwindcss/forms'), // This line must be present
+          ],
+        }
+        

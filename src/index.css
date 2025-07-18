@@ -1,3 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* src/index.css */
+
+/*
+  IMPORTANT: For Tailwind CSS v4+, you directly import your config file.
+  The @tailwind directives are no longer used here.
+*/
+@import "tailwindcss";
+
+/* You can add your own custom CSS below this line if needed */
+

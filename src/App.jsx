@@ -87,8 +87,8 @@ const App = () => {
                     'User-Agent': 'AI-Product-Generator-Frontend/1.0', // Consistent User-Agent
                 },
                 body: JSON.stringify({
-                    // FIX: Send the unique ID to the primary field, which is "Product Name"
-                    "Product Name": `${productName} - ${new Date().toLocaleString()}`, // <--- CRITICAL CHANGE
+                    // Send the unique ID to the primary field, which is "Product Name"
+                    "Product Name": `${productName} - ${new Date().toLocaleString()}`, // Unique ID for the record
                     "Key Features": keyFeatures,
                     "Target Audience": targetAudience,
                     "Description Length": descriptionLength,
@@ -118,13 +118,13 @@ const App = () => {
                 AI Product Description Generator
             </h1>
 
-            <div className="space-y-4 mb-6">
+            <div className="space-y-6 mb-8"> {/* Increased space-y and mb */}
                 <div>
                     <label htmlFor="productName" className="block text-[#F8F8F8] text-sm font-bold mb-2">Product Name:</label>
                     <input
                         type="text"
                         id="productName"
-                        className="shadow appearance-none border border-[#748873] rounded w-full py-2 px-3 text-[#F8F8F8] leading-tight focus:outline-none focus:shadow-outline bg-[#5A6B59]"
+                        className="form-input block w-full rounded-md border-gray-600 shadow-sm bg-[#5A6B59] text-[#F8F8F8] placeholder-[#B0B0B0] focus:border-[#D1A980] focus:ring focus:ring-[#D1A980] focus:ring-opacity-50"
                         value={productName}
                         onChange={(e) => setProductName(e.target.value)}
                         placeholder="e.g., Smartwatch, Organic Coffee Beans"
@@ -135,7 +135,7 @@ const App = () => {
                     <textarea
                         id="keyFeatures"
                         rows="3"
-                        className="shadow appearance-none border border-[#748873] rounded w-full py-2 px-3 text-[#F8F8F8] leading-tight focus:outline-none focus:shadow-outline bg-[#5A6B59]"
+                        className="form-textarea block w-full rounded-md border-gray-600 shadow-sm bg-[#5A6B59] text-[#F8F8F8] placeholder-[#B0B0B0] focus:border-[#D1A980] focus:ring focus:ring-[#D1A980] focus:ring-opacity-50 resize-y"
                         value={keyFeatures}
                         onChange={(e) => setKeyFeatures(e.target.value)}
                         placeholder="e.g., GPS tracking, Heart rate monitor, Waterproof; ethically sourced, rich aroma"
@@ -146,7 +146,7 @@ const App = () => {
                     <input
                         type="text"
                         id="targetAudience"
-                        className="shadow appearance-none border border-[#748873] rounded w-full py-2 px-3 text-[#F8F8F8] leading-tight focus:outline-none focus:shadow-outline bg-[#5A6B59]"
+                        className="form-input block w-full rounded-md border-gray-600 shadow-sm bg-[#5A6B59] text-[#F8F8F8] placeholder-[#B0B0B0] focus:border-[#D1A980] focus:ring focus:ring-[#D1A980] focus:ring-opacity-50"
                         value={targetAudience}
                         onChange={(e) => setTargetAudience(e.target.value)}
                         placeholder="e.g., Fitness enthusiasts, Busy professionals, Coffee connoisseurs"
@@ -156,7 +156,7 @@ const App = () => {
                     <label htmlFor="descriptionLength" className="block text-[#F8F8F8] text-sm font-bold mb-2">Description Length:</label>
                     <select
                         id="descriptionLength"
-                        className="shadow border border-[#748873] rounded w-full py-2 px-3 text-[#F8F8F8] leading-tight focus:outline-none focus:shadow-outline bg-[#5A6B59]"
+                        className="form-select block w-full rounded-md border-gray-600 shadow-sm bg-[#5A6B59] text-[#F8F8F8] focus:border-[#D1A980] focus:ring focus:ring-[#D1A980] focus:ring-opacity-50"
                         value={descriptionLength}
                         onChange={(e) => setDescriptionLength(e.target.value)}
                     >
@@ -167,10 +167,10 @@ const App = () => {
                 </div>
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-8"> {/* Added mb for spacing below button */}
                 <button
                     onClick={handleGenerateDescription}
-                    className="bg-[#D1A980] hover:bg-[#B89470] text-[#3C4B3B] font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D1A980] focus:ring-opacity-75"
+                    className="bg-[#D1A980] hover:bg-[#B89470] text-[#3C4B3B] font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D1A980] focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed" // Added disabled styles
                     disabled={loading}
                 >
                     {loading ? 'Generating...' : 'Generate Description'}
@@ -178,7 +178,10 @@ const App = () => {
             </div>
 
             {generationError && (
-                <div className="mt-6 p-4 bg-red-800 text-red-100 rounded-lg shadow-md text-center">
+                <div className="mt-6 p-4 bg-red-700 text-red-100 rounded-lg shadow-md text-center flex items-center justify-center space-x-2"> {/* Adjusted color, added flex for icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
                     <p className="font-semibold">Error:</p>
                     <p>{generationError}</p>
                 </div>
@@ -189,8 +192,17 @@ const App = () => {
                     <h3 className="text-xl font-semibold text-[#D1A980] mb-4">Generated Description:</h3>
                     <p className="text-[#F8F8F8] whitespace-pre-wrap">{generatedDescription}</p>
                     {saveToAirtableStatus && ( // Display Airtable save status
-                        <p className={`mt-4 text-sm font-medium ${saveToAirtableStatus.includes('Failed') ? 'text-red-400' : 'text-green-400'}`}>
-                            {saveToAirtableStatus}
+                        <p className={`mt-4 text-sm font-medium flex items-center space-x-2 ${saveToAirtableStatus.includes('Failed') ? 'text-red-400' : 'text-green-400'}`}>
+                            {saveToAirtableStatus.includes('Failed') ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                            )}
+                            <span>{saveToAirtableStatus}</span>
                         </p>
                     )}
                 </div>
