@@ -114,7 +114,7 @@ To run this project on your local machine, ensuring all dependencies and styling
     * Open `src/App.jsx` and locate the `AIRTABLE_EMBED_BASE_URL` constant.
     * **Replace the existing URL** with the embed URL from *your* Airtable view:
         ```javascript
-        const AIRTABLE_EMBED_BASE_URL = "[https://airtable.com/embed/YOUR_AIRTABLE_BASE_ID/YOUR_AIRTABLE_VIEW_ID?layout=card](https://airtable.com/embed/YOUR_AIRTABLE_BASE_ID/YOUR_AIRTABLE_VIEW_ID?layout=card)";
+        const AIRTABLE_EMBED_BASE_URL = "https://airtable.com/embed/YOUR_AIRTABLE_BASE_ID/YOUR_AIRTABLE_VIEW_ID?layout=card";
         ```
         *(Example: `https://airtable.com/embed/appXXXXXXXXXXXXXX/shrXXXXXXXXXXXXXX?layout=card`)*
     * Save the file.
