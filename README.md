@@ -50,7 +50,7 @@ To run this project on your local machine, ensuring all dependencies and styling
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/damunoz32/ai-product-generator-vite-airtable.git](https://github.com/damunoz32/ai-product-generator-vite-airtable.git)
+    git clone https://github.com/damunoz32/ai-product-generator-vite-airtable.git
     cd ai-product-generator-vite-airtable
     ```
 
