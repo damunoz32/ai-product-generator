@@ -50,7 +50,7 @@ To run this project on your local machine, ensuring all dependencies and styling
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/damunoz32/ai-product-generator-vite-airtable.git
+    git clone [https://github.com/damunoz32/ai-product-generator-vite-airtable.git](https://github.com/damunoz32/ai-product-generator-vite-airtable.git)
     cd ai-product-generator-vite-airtable
     ```
 
@@ -108,7 +108,18 @@ To run this project on your local machine, ensuring all dependencies and styling
 7.  **Ensure `src/App.jsx` has the correct styling classes and API URLs:**
     * Verify `src/App.jsx` includes the enhanced Tailwind CSS classes for form elements (e.g., `form-input`, `form-textarea`, `form-select`) and the correct Vercel production URLs for API calls.
 
-8.  **Start the development server:**
+8.  **Optional (Recommended) - Update Airtable Iframe URL in `src/App.jsx`:**
+    * If you want the embedded Airtable view to display data from *your own* Airtable base, you'll need to update the iframe's source URL.
+    * Go to your Airtable base, open the `Generated Descriptions` table, create a shareable view (e.g., a Grid view), and get the embed code.
+    * Open `src/App.jsx` and locate the `AIRTABLE_EMBED_BASE_URL` constant.
+    * **Replace the existing URL** with the embed URL from *your* Airtable view:
+        ```javascript
+        const AIRTABLE_EMBED_BASE_URL = "[https://airtable.com/embed/YOUR_AIRTABLE_BASE_ID/YOUR_AIRTABLE_VIEW_ID?layout=card](https://airtable.com/embed/YOUR_AIRTABLE_BASE_ID/YOUR_AIRTABLE_VIEW_ID?layout=card)";
+        ```
+        *(Example: `https://airtable.com/embed/appXXXXXXXXXXXXXX/shrXXXXXXXXXXXXXX?layout=card`)*
+    * Save the file.
+
+9.  **Start the development server:**
     ```bash
     npm run dev
     ```
@@ -213,8 +224,7 @@ This highlights the importance of systematic debugging, understanding build tool
 ## 🚀 Live Application
 
 You can view and interact with the live application here:
-[https://ai-product-generator-sigma.vercel.app/](https://ai-product-generator-sigma.vercel.app/)  
-[https://airtable.com/appmbVTcI3TqH3nxS/shrxArbpZEQj41Y1s] (https://airtable.com/appmbVTcI3TqH3nxS/shrxArbpZEQj41Y1s)  
+https://ai-product-generator-sigma.vercel.app/
 
 ## 📧 Contact
 
