@@ -34,10 +34,9 @@ export default async function handler(req, res) {
   const incomingUserAgent = req.headers['user-agent'] || 'Unknown-Client-Airtable-Proxy';
 
   try {
-    // Destructure the fields expected from the frontend
+    // FIX: Destructure "Product Name" as the primary field, and other fields.
     const {
-      "Record ID": recordId, // This is your primary field
-      "Product Name": productName, // This is your standard text field for product name
+      "Product Name": productNamePrimary, // This is the unique ID for the record
       "Key Features": keyFeatures,
       "Target Audience": targetAudience,
       "Description Length": descriptionLength,
@@ -46,10 +45,9 @@ export default async function handler(req, res) {
 
     // Basic validation for required fields
     // Ensure all fields that Airtable requires (especially the primary field) are present
-    if (!recordId || !productName || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
+    if (!productNamePrimary || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
       console.error('Proxy validation failed. Missing fields:', {
-        recordId: !!recordId,
-        productName: !!productName,
+        productNamePrimary: !!productNamePrimary,
         keyFeatures: !!keyFeatures,
         targetAudience: !!targetAudience,
         descriptionLength: !!descriptionLength,
@@ -65,13 +63,13 @@ export default async function handler(req, res) {
     // Prepare the data payload for Airtable
     const airtablePayload = {
       fields: {
-        "Record ID": recordId,
-        "Product Name": productName,
+        // FIX: Send the unique ID to the primary "Product Name" field
+        "Product Name": productNamePrimary,
         "Key Features": keyFeatures,
         "Target Audience": targetAudience,
         "Description Length": descriptionLength,
         "Generated Text": generatedText,
-        // "Generated At" field is set automatically by Airtable's 'Created time' type if you have one
+        // If you had a "Generated At" field (Created time type), Airtable handles it automatically
       }
     };
 
