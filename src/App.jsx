@@ -22,7 +22,7 @@ const App = () => {
     const GEMINI_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/gemini-generate-description`;
     const AIRTABLE_PROXY_API_URL = `${VERCEL_PRODUCTION_DOMAIN}/api/airtable-descriptions`;
 
-    // Base URL for the Airtable embed (without query parameters)
+    // Base URL for the Airtable embed
     const AIRTABLE_EMBED_BASE_URL = "https://airtable.com/embed/appmbVTcI3TqH3nxS/shrxArbpZEQj41Y1s?layout=card";
 
     // Effect to initialize iframeSrc with a cache-busting timestamp on initial load
@@ -98,8 +98,7 @@ const App = () => {
                     'User-Agent': 'AI-Product-Generator-Frontend/1.0', // Consistent User-Agent
                 },
                 body: JSON.stringify({
-                    // FIX: Send ONLY the productName to the "Product Name" field
-                    "Product Name": productName, // <--- CRITICAL FIX for Product Name
+                    "Product Name": productName, 
                     "Key Features": keyFeatures,
                     "Target Audience": targetAudience,
                     "Description Length": descriptionLength,
@@ -123,7 +122,7 @@ const App = () => {
         }
     };
 
-    // Function to handle page refresh (now updates iframe src)
+    // Function to handle page refresh
     const handleRefreshAirtableView = () => {
         // Update the iframe src with a new timestamp to force a reload
         setIframeSrc(`${AIRTABLE_EMBED_BASE_URL}&_t=${new Date().getTime()}`);
@@ -241,7 +240,7 @@ const App = () => {
                 <div className="relative" style={{ paddingBottom: '56.25%', height: 0 }}> {/* 16:9 aspect ratio container */}
                     <iframe
                         className="absolute top-0 left-0 w-full h-full rounded-md" // Tailwind classes for full size and rounded corners
-                        src={iframeSrc} {/* Use the state variable for src */}
+                        src={iframeSrc}
                         frameBorder="0"
                         onLoad={() => console.log('Airtable iframe loaded')} // Optional: for debugging
                         style={{ background: 'transparent' }} // Keep transparent background if needed
