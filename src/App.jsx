@@ -87,8 +87,9 @@ const App = () => {
                     'User-Agent': 'AI-Product-Generator-Frontend/1.0', // Consistent User-Agent
                 },
                 body: JSON.stringify({
-                    "Record ID": `${productName} - ${new Date().toLocaleString()}`, // <--- NEW/FIXED LINE
-                    "Linked Product": [{ name: productName }], // This remains for the actual product link
+                    // Send data for the Primary Field (Record ID) and Product Name
+                    "Record ID": `${productName} - ${new Date().toLocaleString()}`, // Unique ID for the record
+                    "Product Name": productName, // The actual product name for a standard text field
                     "Key Features": keyFeatures,
                     "Target Audience": targetAudience,
                     "Description Length": descriptionLength,

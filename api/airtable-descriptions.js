@@ -2,27 +2,27 @@
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, User-Agent');
+  // Set CORS headers for all responses.
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Allows requests from any origin
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // Allow POST for creating records, OPTIONS for preflight
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, User-Agent'); // Allow necessary headers
 
+  // Handle preflight OPTIONS request for CORS.
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
+  // Ensure it's a POST request for creating data
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method Not Allowed. This endpoint only accepts POST requests.' });
     return;
   }
 
+  // Retrieve Airtable API Token and Base ID from environment variables
   const airtableApiToken = process.env.AIRTABLE_API_TOKEN;
   const airtableBaseId = process.env.AIRTABLE_BASE_ID;
-  const generatedDescriptionsTableName = 'Generated Descriptions'; // Your main table
-  const productsTableName = 'Products'; // Your products table
-
-  // IMPORTANT: Set this to the EXACT name of your NEW linked field in Airtable
-  const newLinkedProductFieldName = 'Product Link New'; // <--- Ensure this matches your new field name
+  const airtableTableName = 'Generated Descriptions'; // Your main table name
 
   if (!airtableApiToken || !airtableBaseId) {
     console.error('Missing Airtable API Token or Base ID environment variables.');
@@ -30,137 +30,51 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Capture the User-Agent from the incoming request for consistent logging
   const incomingUserAgent = req.headers['user-agent'] || 'Unknown-Client-Airtable-Proxy';
 
-  let requestBody;
   try {
-    if (typeof req.body === 'string') {
-      requestBody = JSON.parse(req.body);
-    } else if (typeof req.body === 'object' && req.body !== null) {
-      requestBody = req.body;
-    } else {
-      console.error('Invalid req.body format:', req.body);
-      res.status(400).json({ error: 'Invalid request body format.' });
-      return;
-    }
-
+    // Destructure the fields expected from the frontend
     const {
-      "Record ID": recordId,
-      "Linked Product": linkedProductArray, // Still destructure, but won't use directly in payload
+      "Record ID": recordId, // This is your primary field
+      "Product Name": productName, // This is your standard text field for product name
       "Key Features": keyFeatures,
       "Target Audience": targetAudience,
       "Description Length": descriptionLength,
       "Generated Text": generatedText
-    } = requestBody;
+    } = req.body;
 
-    const productNameFromFrontend = linkedProductArray && linkedProductArray.length > 0
-                                    ? linkedProductArray[0].name
-                                    : null;
-
-    let productRecordId = null;
-
-    console.log('--- Incoming Request Body (Proxy) ---');
-    console.log(JSON.stringify(requestBody, null, 2));
-    console.log(`Product Name from Frontend for Linking: "${productNameFromFrontend}"`);
-    console.log('-------------------------------------');
-
-    if (productNameFromFrontend) {
-      const productsLookupApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(productsTableName)}?filterByFormula=({Product Name}='${encodeURIComponent(productNameFromFrontend)}')`;
-
-      console.log(`Attempting to lookup product: ${productNameFromFrontend} at URL: ${productsLookupApiUrl}`);
-      const productsLookupResponse = await fetch(productsLookupApiUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${airtableApiToken}`,
-          'Content-Type': 'application/json',
-          'User-Agent': incomingUserAgent,
-        },
-      });
-
-      const productsLookupData = await productsLookupResponse.json();
-      console.log('--- Products Lookup Response ---');
-      console.log(`Status: ${productsLookupResponse.status}`);
-      console.log('Body:', JSON.stringify(productsLookupData, null, 2));
-      console.log('--------------------------------');
-
-      if (productsLookupResponse.ok && productsLookupData.records && productsLookupData.records.length > 0) {
-        productRecordId = productsLookupData.records[0].id;
-        console.log(`Found existing Product ID for "${productNameFromFrontend}": ${productRecordId}`);
-      } else {
-        console.log(`Product "${productNameFromFrontend}" not found in Products table. Attempting to create new product...`);
-        const createProductApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(productsTableName)}`;
-        const createProductPayload = {
-          fields: {
-            "Product Name": productNameFromFrontend
-          }
-        };
-
-        console.log('--- Creating New Product Payload ---');
-        console.log(JSON.stringify(createProductPayload, null, 2));
-        console.log('------------------------------------');
-
-        const createProductResponse = await fetch(createProductApiUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${airtableApiToken}`,
-            'Content-Type': 'application/json',
-            'User-Agent': incomingUserAgent,
-          },
-          body: JSON.stringify(createProductPayload),
-        });
-
-        const createProductData = await createProductResponse.json();
-        console.log('--- Create Product Response ---');
-        console.log(`Status: ${createProductResponse.status}`);
-        console.log('Body:', JSON.stringify(createProductData, null, 2));
-        console.log('-------------------------------');
-
-
-        if (createProductResponse.ok && createProductData.id) {
-          productRecordId = createProductData.id;
-          console.log(`Successfully created new Product "${productNameFromFrontend}" with ID: ${productRecordId}`);
-        } else {
-          console.error(`Failed to create new product "${productNameFromFrontend}" in Products table. Status: ${createProductResponse.status}, Body: ${JSON.stringify(createProductData)}`);
-          res.status(500).json({ error: `Failed to prepare product link: Could not find or create product "${productNameFromFrontend}".` });
-          return;
-        }
-      }
-    } else {
-        console.warn('productNameFromFrontend was null or empty. Cannot link product.');
-    }
-
-    console.log(`Final productRecordId before sending to Generated Descriptions: ${productRecordId}`);
-
-    if (!recordId || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
+    // Basic validation for required fields
+    // Ensure all fields that Airtable requires (especially the primary field) are present
+    if (!recordId || !productName || !keyFeatures || !targetAudience || !descriptionLength || !generatedText) {
       console.error('Proxy validation failed. Missing fields:', {
         recordId: !!recordId,
+        productName: !!productName,
         keyFeatures: !!keyFeatures,
         targetAudience: !!targetAudience,
         descriptionLength: !!descriptionLength,
-        generatedText: !!generatedText,
+        generatedText: !!generatedText
       });
-      res.status(400).json({ error: 'Missing required fields for Airtable record. Please check all fields are being sent and are not empty.' });
+      res.status(400).json({ error: 'Missing required fields for Airtable record. Please ensure all fields are being sent and are not empty.' });
       return;
     }
+
+    // Construct the Airtable API URL for creating records
+    const airtableApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableTableName)}`;
 
     // Prepare the data payload for Airtable
     const airtablePayload = {
       fields: {
         "Record ID": recordId,
-        // FIX: Use the new linked field name here
-        [newLinkedProductFieldName]: productRecordId ? [{ id: productRecordId }] : [], // <--- CRITICAL CHANGE
+        "Product Name": productName,
         "Key Features": keyFeatures,
         "Target Audience": targetAudience,
         "Description Length": descriptionLength,
         "Generated Text": generatedText,
+        // "Generated At" field is set automatically by Airtable's 'Created time' type if you have one
       }
     };
 
-    console.log('--- Airtable Payload Being Sent to Generated Descriptions ---');
-    console.log(JSON.stringify(airtablePayload, null, 2));
-    console.log('-----------------------------------------------------------');
-
-    const airtableApiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(generatedDescriptionsTableName)}`;
     const airtableResponse = await fetch(airtableApiUrl, {
       method: 'POST',
       headers: {
